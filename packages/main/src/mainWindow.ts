@@ -1,16 +1,40 @@
-import {BrowserWindow} from 'electron';
-import {join} from 'path';
-import {URL} from 'url';
+import { BrowserWindow } from 'electron-acrylic-window'
+import { setupTitlebar, attachTitlebarToWindow } from 'custom-electron-titlebar/main'
+import { join } from 'path'
+import { URL } from 'url'
+import * as os from 'os'
+
+setupTitlebar()
+
+function isWindowAcrylic() {
+  return (
+    process.platform === 'win32' &&
+    parseInt(os.release().split('.')[0]) >= 10
+  )
+}
 
 async function createWindow() {
+  let vibrancy: any = 'under-window'
+  if (isWindowAcrylic()) {
+    vibrancy = {
+      theme: 'dark',
+      effect: 'acrylic',
+      disableOnBlur: false
+    }
+  }
+
   const browserWindow = new BrowserWindow({
     show: false, // Use 'ready-to-show' event to show window
+    vibrancy: vibrancy,
+    visualEffectState: 'active',
+    frame: false,
+    icon: join(__dirname, '../../../static/favicon.png'),
     webPreferences: {
-      nativeWindowOpen: true,
+      nativeWindowOpen: true, //true
       webviewTag: false, // The webview tag is not recommended. Consider alternatives like iframe or Electron's BrowserView. https://www.electronjs.org/docs/latest/api/webview-tag#warning
-      preload: join(__dirname, '../../preload/dist/index.cjs'),
-    },
-  });
+      preload: join(__dirname, '../../preload/dist/index.cjs')
+    }
+  })
 
   /**
    * If you install `show: true` then it can cause issues when trying to close the window.
@@ -19,41 +43,44 @@ async function createWindow() {
    * @see https://github.com/electron/electron/issues/25012
    */
   browserWindow.on('ready-to-show', () => {
-    browserWindow?.show();
+    browserWindow?.show()
 
     if (import.meta.env.DEV) {
-      browserWindow?.webContents.openDevTools();
+      //      browserWindow?.webContents.openDevTools()
     }
-  });
+
+    attachTitlebarToWindow(browserWindow)
+  })
 
   /**
    * URL for main window.
    * Vite dev server for development.
    * `file://../renderer/index.html` for production and test
    */
-  const pageUrl = import.meta.env.DEV && import.meta.env.VITE_DEV_SERVER_URL !== undefined
-    ? import.meta.env.VITE_DEV_SERVER_URL
-    : new URL('../renderer/dist/index.html', 'file://' + __dirname).toString();
+  const pageUrl =
+    import.meta.env.DEV && import.meta.env.VITE_DEV_SERVER_URL !== undefined
+      ? import.meta.env.VITE_DEV_SERVER_URL
+      : new URL('../renderer/dist/index.html', 'file://' + __dirname).toString()
 
+  await browserWindow.loadURL(pageUrl)
 
-  await browserWindow.loadURL(pageUrl);
-
-  return browserWindow;
+  return browserWindow
 }
+
 
 /**
  * Restore existing BrowserWindow or Create new BrowserWindow
  */
 export async function restoreOrCreateWindow() {
-  let window = BrowserWindow.getAllWindows().find(w => !w.isDestroyed());
+  let window = BrowserWindow.getAllWindows().find(w => !w.isDestroyed())
 
   if (window === undefined) {
-    window = await createWindow();
+    window = await createWindow()
   }
 
   if (window.isMinimized()) {
-    window.restore();
+    window.restore()
   }
 
-  window.focus();
+  window.focus()
 }
