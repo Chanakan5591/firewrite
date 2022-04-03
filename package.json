@@ -31,6 +31,7 @@
     "@typescript-eslint/parser": "^5.17.0",
     "@vue/test-utils": "2.0.0-rc.18",
     "cross-env": "7.0.3",
+    "cz-conventional-changelog": "^3.3.0",
     "electron": "17.1.0",
     "electron-acrylic-window": "^0.5.11",
     "electron-builder": "22.14.13",
@@ -77,5 +78,10 @@
     "remark-parse": "^10.0.1",
     "remark-rehype": "^10.1.0",
     "unified": "^10.1.2"
+  },
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/cz-conventional-changelog"
+    }
   }
 }

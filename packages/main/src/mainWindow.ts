@@ -1,8 +1,8 @@
-import { BrowserWindow } from 'electron-acrylic-window'
 import { setupTitlebar, attachTitlebarToWindow } from 'custom-electron-titlebar/main'
 import { join } from 'path'
 import { URL } from 'url'
 import * as os from 'os'
+import { BrowserWindow } from 'electron'
 
 setupTitlebar()
 
@@ -14,7 +14,8 @@ function isWindowAcrylic() {
 }
 
 async function createWindow() {
-  let vibrancy: any = 'under-window'
+
+  let vibrancy: any
   if (isWindowAcrylic()) {
     vibrancy = {
       theme: 'dark',
@@ -23,18 +24,36 @@ async function createWindow() {
     }
   }
 
-  const browserWindow = new BrowserWindow({
-    show: false, // Use 'ready-to-show' event to show window
-    vibrancy: vibrancy,
-    visualEffectState: 'active',
-    frame: false,
-    icon: join(__dirname, '../../../static/favicon.png'),
-    webPreferences: {
-      nativeWindowOpen: true, //true
-      webviewTag: false, // The webview tag is not recommended. Consider alternatives like iframe or Electron's BrowserView. https://www.electronjs.org/docs/latest/api/webview-tag#warning
-      preload: join(__dirname, '../../preload/dist/index.cjs')
-    }
-  })
+  let browserWindow: any
+
+  if (process.platform === 'win32') {
+    const { BrowserWindow } = require('electron-acrylic-window')
+    browserWindow = new BrowserWindow({
+      show: false, // Use 'ready-to-show' event to show window
+      vibrancy: vibrancy,
+      visualEffectState: 'active',
+      frame: false,
+      icon: join(__dirname, '../../../static/favicon.png'),
+      webPreferences: {
+        nativeWindowOpen: true, //true
+        webviewTag: false, // The webview tag is not recommended. Consider alternatives like iframe or Electron's BrowserView. https://www.electronjs.org/docs/latest/api/webview-tag#warning
+        preload: join(__dirname, '../../preload/dist/index.cjs')
+      }
+    })
+  } else {
+    browserWindow = new BrowserWindow({
+      show: false, // Use 'ready-to-show' event to show window
+      vibrancy: 'under-window',
+      visualEffectState: 'active',
+      frame: false,
+      icon: join(__dirname, '../../../static/favicon.png'),
+      webPreferences: {
+        nativeWindowOpen: true, //true
+        webviewTag: false, // The webview tag is not recommended. Consider alternatives like iframe or Electron's BrowserView. https://www.electronjs.org/docs/latest/api/webview-tag#warning
+        preload: join(__dirname, '../../preload/dist/index.cjs')
+      }
+    })
+  }
 
   /**
    * If you install `show: true` then it can cause issues when trying to close the window.
